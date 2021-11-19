@@ -1,0 +1,11 @@
+.vs
+.clang-format
+*.sln
+*.vcxproj
+*.filters
+
+*.o
+*.bak
+
+Debug
+debug
