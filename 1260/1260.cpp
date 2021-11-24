@@ -8,20 +8,25 @@ int main()
     while (ca --)
     {
         int c;
-        int n[100], p[100];
+        int n[101], p[101];
         scanf("%d", &c);
         int res = 0;
-        int f[100] = { 0 };
-        for (int i = 0; i < c; i++)
+        for (int i = 1; i <= c; i++)
         {
             scanf("%d %d", &n[i], &p[i]);
             res += (n[i]+10) * p[i];
-            if (i > 0) f[i] = max(10 * p[i - 1] - (p[i] - p[i - 1]) * n[i], 0);
         }
-        int dp[100] = { 0, f[1] };
-        for (int i = 2; i < c; i++)
-            dp[i] = max(dp[i - 1], dp[i - 2] + f[i]);
-        res -= dp[c - 1];
+        int dp[101] = { 0 };
+        for (int i = 1; i <= c; i++)
+            for (int j = 0; j < i; j++)
+            {
+                //use i to replace j~i-1
+                int sum = 0;
+                for (int k = j+1; k < i; k++)
+                    sum += 10 * p[k] - (p[i] - p[k]) * n[k];
+                dp[i] = max(dp[i], dp[j] + sum);
+            }
+        res -= dp[c];
         printf("%d\n", res);
     }
     return 0;
