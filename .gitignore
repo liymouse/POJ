@@ -3,9 +3,12 @@
 *.sln
 *.vcxproj
 *.filters
+*.vcxproj*
 
 *.o
 *.bak
 
 Debug
 debug
+
+*.txt
