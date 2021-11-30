@@ -4,7 +4,7 @@
 #define min(a,b) ((a)<(b)?(a):(b))
 
 typedef struct Node{
-    char id;
+    int id;
     Node *next[26];
 };
 
@@ -59,13 +59,15 @@ void clean(Node *p)
 }
 int main()
 {
+    //freopen("1204.in", "r", stdin);
+    //freopen("1204.out", "w", stdout);
     scanf("%d %d %d", &row, &col, &n);
     for (int i = 0; i < row; i++)
         scanf("%s", a[i]);
     int minL = 10000;
     for (int i = 1; i <= n; i++)
     {
-        char word[2005];
+        char word[1005];
         scanf("%s", word);
         int L = strlen(word);
         minL = min(minL, L);
@@ -73,21 +75,26 @@ int main()
         insert(word, L, i);
     }
     num = 0;
-    for (int i = 0; i < row; i ++)
+    for (int i = 0; i < row; i++)
+    {
         for (int j = 0; j < col; j++)
+        {
             for (int d = 0; d < 8; d++)
             {
-                int endi = i + dir[d][0] * (minL-1);
-                int endj = j + dir[d][1] * (minL-1);
+                int endi = i + dir[d][0] * (minL - 1);
+                int endj = j + dir[d][1] * (minL - 1);
                 if (0 <= endi && endi < row && 0 <= endj && endj < col)
                 {
                     sx = i; sy = j;
                     sd = d;
                     dfs(tree, sx, sy);
-                    if (num == n) goto L_exit;
+                    if (num == n) break;
                 }
             }
-L_exit:
+            if (num == n) break;
+        }
+        if (num == n) break;
+    }
     for (int i = 1; i <= n; i++)
         printf("%d %d %c\n", res_row[i], res_col[i], res_dir[i]);
 
