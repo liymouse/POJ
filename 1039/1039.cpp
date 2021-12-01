@@ -1,91 +1,59 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#define max(a,b) ((a)>(b)?(a):(b))
 
 typedef struct
 {
-    double x1, y1;
-    double x2, y2;
+    double x, y;
 }Node;
-Node a[22];
+Node a[50];
 double res;
 int n;
 
-double cha(double xa, double ya, double xb, double yb)
+#define less(a,b) (a<=b+1e-6)
+
+void check(int ii, int jj)
 {
-    return xa * yb - xb * ya;
-}
-//a,b is a line, c is point
-double cross(double cx, double cy, double ax, double ay, double bx, double by)
-{
-    return cha(bx - ax, by - ay, cx - ax, cy - ay);
-}
-void check(double x1, double y1, double x2, double y2)
-{
-    double k = (y2 - y1) / (x2 - x1);
-    double b = (y1*x2 - y2 * x1) / (x2 - x1);
-    double y0 = a[0].x1 * k + b;
-    if (a[0].y2 <= y0 && y0 <= a[0].y1)
+    double k = (a[jj].y-a[ii].y) / (a[jj].x-a[ii].x);
+    double b = a[ii].y - k * a[ii].x;
+    for (int i = 0; i < 2 * n; i++)
     {
-        double line_x = x2 - x1;
-        double line_y = y2 - y1;
-        int has = 0;
-        for (int i = 1; i < n; i++)
+        double y0 = a[i].x * k + b;
+        if ((i % 2 == 0 && less(y0, a[i].y)) ||
+            (i % 2 == 1 && less(a[i].y, y0))) continue;
+        else if (i <= max(ii, jj)) return;
+        else
         {
-            double ex = 1e100;
-            has = 0;
-            //cross up line
-            if (cha(line_x, line_y, a[i].x1 - x1, a[i].y1 - y1) < 0 ||
-                cha(line_x, line_y, a[i - 1].x1 - x1, a[i - 1].y1 - y1) < 0)
-            {
-                double k1 = (a[i].y1 - a[i - 1].y1) / (a[i].x1 - a[i - 1].x1);
-                double b1 = (a[i - 1].y1 * a[i].x1 - a[i].y1 * a[i - 1].x1) / (a[i].x1 - a[i - 1].x1);
-                double cross_x = (b1 - b) / (k - k1);
-                if (cross_x < ex) ex = cross_x;
-                has = 1;
-            }
-            if (cha(line_x, line_y, a[i].x2 - x1, a[i].y2 - y1) > 0 ||
-                cha(line_x, line_y, a[i - 1].x2 - x1, a[i - 1].y2 - y1) > 0)
-            {
-                double k1 = (a[i].y2 - a[i - 1].y2) / (a[i].x2 - a[i - 1].x2);
-                double b1 = (a[i - 1].y2 * a[i].x2 - a[i].y2 * a[i - 1].x2) / (a[i].x2 - a[i - 1].x2);
-                double cross_x = (b1 - b) / (k - k1);
-                if (cross_x < ex) ex = cross_x;
-                has = 1;
-            }
-            if (has)
-            {
-                if (ex > res) res = ex;
-                break;
-            }
-        }
-        if (!has) // pass all
-        {
-            res = a[n - 1].x1 + 1;
+            double k1 = (a[i].y - a[i - 2].y) / (a[i].x - a[i - 2].x);
+            double b1 = a[i - 2].y - k1 * a[i - 2].x;
+            double x = (b1 - b) / (k - k1);
+            res = max(res, x);
+            return;
         }
     }
+    res = a[2 * n - 1].x + 100;
 }
+
 int main()
 {
     while (scanf("%d", &n) == 1)
     {
         if (n == 0) break;
+        res = -1e10;
         for (int i = 0; i < n; i++)
         {
-            scanf("%lf %lf", &a[i].x1, &a[i].y1);
-            a[i].x2 = a[i].x1;
-            a[i].y2 = a[i].y1 - 1;
+            scanf("%lf %lf", &a[2*i].x, &a[2*i].y);
+            a[2*i+1].x = a[2*i].x;
+            a[2*i+1].y = a[2*i].y - 1;
         }
-        res = a[0].x1;
-        for (int i = 0; i < n; i ++)
-            for (int j = i + 1; j < n; j++)
-            {
-                check(a[i].x1, a[i].y1, a[j].x1, a[j].y1);
-                check(a[i].x1, a[i].y1, a[j].x2, a[j].y2);
-                check(a[i].x2, a[i].y2, a[j].x1, a[j].y1);
-                check(a[i].x2, a[i].y2, a[j].x2, a[j].y2);
-            }
-        if (res >= a[n - 1].x1) printf("Through all the pipe.\n");
-        else printf("%lf\n", res);
+        for (int i = 0; i < 2*n; i ++)
+            for (int j = 0; j < 2*n; j++)
+                if (i != j)
+                {
+                    check(i, j);
+                }
+        if (res >= a[2*n-1].x) printf("Through all the pipe.\n");
+        else printf("%.2lf\n", res);
     }
     return 0;
 }
