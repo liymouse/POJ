@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include <vector>
 #include <algorithm>
@@ -55,7 +56,7 @@ void getKindom(Kindom &a, Point p[], int n)
     a.p[2] = p[2];
     for (int i = 3; i < n; i++)
     {
-        while (cha(p[i], a.p[a.num], a.p[a.num - 1]) >= 0) a.num--;
+        while (a.num > 0 && cha(p[i], a.p[a.num], a.p[a.num - 1]) >= 0) a.num--;
         a.num++;
         a.p[a.num] = p[i];
     }
@@ -66,13 +67,9 @@ void getKindom(Kindom &a, Point p[], int n)
 }
 void check(Kindom &a, Point &p)
 {
-    int zheng = 0, fu = 0;
     for (int i = 1; i < a.num; i++)
     {
-        int k = cha(a.p[i - 1], a.p[i], p);
-        if (k < 0) fu++;
-        else if (k > 0) zheng++;
-        if (zheng > 0 && fu > 0) return;
+        if (cha(a.p[i - 1], a.p[i], p) <= 0) return;
     }
     a.dest = 1;
 }
@@ -89,7 +86,7 @@ int main()
     int n;
     Kindom a[30] = { 0 };
     int num = 0;
-    freopen("1264.in", "r", stdin);
+    //freopen("1264_uva.in", "r", stdin);
     while (scanf("%d", &n) == 1)
     {
         if (n == -1) break;
