@@ -1,0 +1,1319 @@
+//--------------------------------------小技巧------------------------------------------------
+1. 求y=loga(b)：y=log(b)/log(a);
+2. 三角形面积:
+        |x1 y1 1| 
+      s=|x2 y2 1|=x1y2+x2y3+x3y1-x3y2-x2y1-x1y3 
+        |x3 y3 1| 
+ *海伦公式： 令p=(a+b+c)/2, 则 S=sqrt(p*(p-a)*(p-b)*(p-c));
+3. n的约数的个数:
+    若n满足n=a1^n1 * a2^n2 * a3^n3 * ... * am^nm,
+    则n约数的个数为 (n1+1)(n2+1)(n3+1)...(nm+1)
+4. 费马小定理:
+    若n是素数，则对所有不被n整除的a，有a^n - a 一定能被n整除.
+5. 求x^y: int(exp(y*ln(x)))
+6. 求x的n次方根：exp(1/n*ln(x))
+7. 有M个自然数集 A1,A2,A3…AM，它们的并集为 {1,2,3,4,…N-1,N}。
+        这个M个集合的可能性: (2^m-1)^n    (利用2分来求)
+8. x^k的总长度(整数位数+小数位数)
+        s=int((log(x)/log(10))*k+1e-2)+1+y*k    // x:为此数 y:为小数部分的长度
+
+//--------------------------------------快速排序------------------------------------------------
+// 入口参数：l:七点 r：终点   操作函数：a[],b[],...
+
+void    qsort( int l,int r ) {
+    int    i,j,mid;
+    int    temp;
+    i=l;    j=r; 
+    mid=a[(l+r)/2];            //{将当前序列在中间位置的数定义为中间数} 
+    for( ;; ) {
+        while( a[i]<mid )    i++;    //{在左半部分寻找比中间数大的数} 
+        while( a[j]>mid )    j--;    //{在右半部分寻找比中间数小的数} 
+        if( i<=j ) {        //{若找到一组与排序目标不一致的数对则交换它们} 
+            temp=a[i]; a[i]=a[j]; a[j]=temp; // 要操作的函数
+            temp=b[i]; b[i]=b[j]; b[j]=temp;
+            i++;    j--;        //继续找
+            }
+        if(i>j)    break;
+        }
+    if( l<j )    qsort(l,j);        //{若未到两个数的边界，则递归搜索左右区间} 
+    if( i<r )    qsort(i,r);     
+}
+
+//--------------------------------------高精度运算------------------------------------------------
+// a[],b[],c[]都是低位在左(1..)，高位在右(..n)
+// 实现c[]=a[]+b[];
+void    add( int a[],int b[] )
+{
+    int        i;
+    int        len;
+    
+    memset(c,0,sizeof(c));
+    len=a[0]; if( len<b[0] ) len=b[0];
+    for( i=1;i<=len;++i )
+    {
+        c[i]    +=    a[i]+b[i];
+        c[i+1]    +=    c[i]/10;
+        c[i]    =    c[i]%10;
+    }
+    if( c[len+1] ) len++;
+    c[0]    =    len;
+}
+
+// 实现c[]=c[]-b[];
+void    sub( int c[],int b[] )
+{
+    int        i,len;
+    
+    len=b[0];
+    for( i=1;i<=len;++i )
+        if( c[i]>=b[i] ) c[i]=c[i]-b[i];
+        else
+        {
+            c[i]=c[i]+10-b[i];
+            c[i+1]    --;
+        }
+    for( i=1;i<=c[0];++i )
+        if( c[i]<0 )
+        {
+            c[i]=10+c[i];
+            c[i+1]--;
+        }
+    len=c[0];
+    while( len>1 && c[len]==0 ) len--;
+    c[0]=len;
+}
+
+// 实现c[]=a[]*b[];
+void    mul( int a[],int b[] )
+{
+    int        i,j,len;
+    
+    memset(c,0,sizeof(c));
+    for( i=1;i<=a[0];++i )
+        for( j=1;j<=b[0];++j )
+        {
+            c[i+j-1]    +=    a[i]*b[j];
+            c[i+j]        +=    c[i+j-1]/10;
+            c[i+j-1]    =    c[i+j-1]%10;
+        }
+    len=a[0]+b[0]+1;
+    while( len>1 && c[len]==0 ) len--;
+    c[0]=len;
+}
+
+// 实现c[]=a[]/b[];      {c:=a div b; d:= a mod b}
+void    div( int a[],int b )
+{
+    int i,len;
+    memset(c,0,sizeof(c));
+    len=a[0]; d=0; 
+    for( i=len;i>=1;--i )
+    {
+        d=d*10+a[i];
+        c[i]=d/b;
+        d=d%b;
+    }
+    while( len>1 && c[len]==0 ) len--;
+    c[0]=len;
+}
+
+//--------------------------------------最小生成树------------------------------------------------
+//数据结构：
+typedef    struct {
+    int        formvex,endvex;
+    int        length;
+}edge;
+//调用框架：
+int    main()
+{
+    cin>>n;         // n:点的个数
+    input(dist); // 若为无向图：dist[i][j]=dist[j][i];
+    prim(n);     // 最后输出sum; ( MST的总长度 )
+}
+void prim( int n )
+{
+    int        j,k,m,v,min;
+    int        d,sum;
+    edge    e;
+    edge    t[107];
+
+    for( j=2;j<=n;++j )
+    {
+        t[j-1].formvex    =    1;
+        t[j-1].endvex    =    j;
+        t[j-1].length    =    dist[1][j];
+    }
+    for( k=1;k<=n-1;++k )
+    {
+        min        =    2000000000;
+        for( j=k;j<=n-1;++j )
+            if( t[j].length<min )
+            {
+                min    =    t[j].length;
+                m    =    j;
+            }
+        e=t[m]; t[m]=t[k]; t[k]=e;
+        v=t[k].endvex;
+        for( j=k+1;j<=n-1;++j )
+        {
+            d    =    dist[v][t[j].endvex];
+            if( d<t[j].length )
+            {
+                t[j].length        =    d;
+                t[j].formvex    =    v;
+            }
+        }
+    }    
+    sum=0; for( j=1;j<=n-1;++j ) sum+=t[j].length;        
+    cout <<sum<<endl;
+}
+
+//--------------------------------------Hamilton回路-----------------------------------------------
+//找出N的一个排列 P1 P2 P3 ..PN 对于:P1->P2->P3->...->PN 找出 |P1P2|+|P2P3|+...+|PN-1PN| 的最小值
+
+#include    <stdio.h>
+#include    <stdlib.h>
+#include    <math.h>
+#include    <time.h>
+
+#define    RAND_TIME  500
+
+int    n;                            // PC机的总数
+double    x[22],y[22];            // 每台PC机的坐标
+double    d[22][22];                // 两台PC机的距离
+int    a[22],t[22];                // 记录汉密尔顿路
+double    len,len_min;            // 汉密尔顿路的总长度
+
+void    init()
+{
+    int    i,j;
+
+    for( i=1;i<=n;++i )    scanf("%lf %lf",&x[i],&y[i]);
+    for( i=1;i<=n;++i )
+        for( j=1;j<=n;++j )
+            d[i][j] = sqrt((x[i]-x[j])*(x[i]-x[j])+(y[i]-y[j])*(y[i]-y[j]));
+
+    for( i=1;i<=n;++i )    d[0][i]=0;
+    for( i=1;i<=n;++i )    d[i][n+1]=0;
+}
+
+void    getmin()
+{
+    int        i,j,k;
+    bool    flag;
+
+    for( ;; )
+    {
+        flag = false;                // false 表示没有可调整的点了
+        for( i=1;i<=n-1;++i )
+        {
+            for( j=i+1;j<=n;++j )
+            {
+                if( d[a[i-1]][a[i]]+d[a[j]][a[j+1]]>d[a[i-1]][a[j]]+d[a[i]][a[j+1]] )
+                {
+                    // 交换a[i..j]的相互位置,即对汉密尔顿回路进行一次调整
+                    for( k=i;k<=j;++k )    t[i+j-k] = a[k];        
+                    for( k=i;k<=j;++k )    a[k] = t[k];
+                    flag = true;    // true 表示对回路还可能有调整.
+                    break;
+                }
+            }
+            if( flag ) break;
+        }
+        if( !flag ) break;
+    }
+    len=0;
+    for( i=1;i<=n;++i )    len += d[a[i-1]][a[i]];
+}
+
+void    work()
+{
+    int    i,j;
+    int    p,q;
+    int    swap;
+
+    for( i=0;i<RAND_TIME;++i )
+    {
+        //srand( (unsigned)time( NULL ) );  
+        for( j=0;j<1000;++j )
+        {
+            p=int((rand()/(double)RAND_MAX)*n)+1;
+            q=int((rand()/(double)RAND_MAX)*n)+1;
+            swap=a[p]; a[p]=a[q]; a[q]=swap;
+        }
+        getmin();
+        if( len_min>len )  len_min=len;
+    }
+    printf("%.2lf\n",len_min);
+}
+
+int    main()
+{
+    int    i;
+
+    while( scanf("%d",&n)!=EOF )
+    {
+        init();    if( n==1 ) { printf("0.00\n"); continue; }
+        for( i=0;i<=n+1;++i )    a[i]=i;
+        getmin();
+        len_min=len;
+        work();
+    }
+    return    0;
+}
+
+//--------------------------------------DP－任务调度-----------------------------------------------
+// a[]:DP对象    f[]:任务开始时间 s[]:结束时间 w[]:可获利益
+// 先对f[]由小到大排序，然后以时间i为阶段。( i=s_min+1 to f_max )
+// DP方程:
+//        f[i]=f[i-1];    第i时间无工作结束
+//        f[i]=max{f[i-1],w[j]+a[s[j]]}    第i时间有结束的工作j
+// qsort(): O(nlogn);    DP: O(n);    g_max为所求。
+void    work( )
+{
+    int    i,j;
+    int    max;
+
+    a[s_min]=0;
+    g_max    =0;
+    j        =1;
+    for( i=s_min+1;i<=f_max;++i )
+    {
+        max=a[i-1];
+        while( f[j]<=i )
+        {
+            if( f[j]==i && max<w[j]+a[s[j]] ) max=w[j]+a[s[j]];
+            j++;
+        }
+        a[i]=max;
+        if( g_max<max )    g_max=max;
+    }
+    printf("%d\n",g_max);
+}
+
+//--------------------------------------DFS & BFS-----------------------------------------------
+// DFS
+void    DFS()
+{
+    Visit(v);
+    Mark(v);
+    for( every edge vw of v )
+        if( w is not marked )
+            DFS(w);
+}
+// BFS
+void    BFS()
+{
+    Visit(v);
+    Mark(v);
+    Enqueue(v);
+    while( queue is not empty )
+    {
+        Dequeue(x);
+        for( every edge xw )
+            if( w is not marked )
+            {
+                Visit(w);
+                Mark(w);
+                Enqueue(w);
+            }
+    }
+}
+
+//--------------------------------------按长度和起点DP-------------------------------------------
+// 问题：单词的划分
+void    divide( )
+{
+    int    i,j,k;
+    int    min;
+    int    n;
+
+    n=strlen(a);
+    for( j=1;j<=n;++j )                // 在长度为1的情况下，对所有的起点枚举
+        if( check( 1,j ) )
+            f[1][j]    =    1;            // f[i][j]中:   i:划分的长度  j:划分的起点
+        else
+            f[1][j]    =    MAXINT;
+
+    for( i=2;i<=n;++i )                // 枚举长度    ( i=2 to n )
+        for( j=1;j<=n-i+1;++j )        // 枚举起点 ( i=1 to n-i+1 )
+            if( check(i,j) )    
+                f[i][j]    = 1;
+            else
+            {
+                min    = MAXINT;
+                for( k=j+1;k<=j+i-1;++k )    // 每一个段的中间分隔位置
+                    if( min>f[k-j][j]+f[i+j-k][k] )    min=f[k-j][j]+f[i+j-k][k];
+                f[i][j]    = min;
+            }
+    cout    << f[n][1] << endl;
+}
+
+//--------------------------------------求凸包的快速算法-------------------------------------------
+// 数据结构：
+typedef struct
+{
+    LLD    x,y;
+}POINT;
+// 具体算法：
+int
+cross( POINT p1,POINT p2,POINT p0 )    // 求(p1-p0)×(p2-p0)叉积。
+{
+    LLD        x1,x2,y1,y2;
+    x1=p1.x-p0.x; y1=p1.y-p0.y;
+    x2=p2.x-p0.x; y2=p2.y-p0.y;
+    return x1*y2-x2*y1;
+}
+
+int    
+main()
+{
+    int        n;
+    int        i,j,k,top;
+    double    max,t;
+
+    while( scanf("%d",&n)!=EOF )
+    {
+        for(i=1;i<=n;++i) scanf("%lld %lld",&a[i].x,&a[i].y);
+        k=1;
+        for( i=2;i<=n;++i )
+            if( a[i].y<a[k].y ) k=i; else
+                if( a[i].y==a[k].y && a[i].x<a[k].x ) k=i;    // 求出最下面最左边的点
+        swap(a[k],a[n]); a[0]=a[n]; n--; 
+        qsort(1,n);        // 对剩下的n个点按极角排序
+        s[0]=a[0]; s[1]=a[1]; s[2]=a[2]; top=2;    // 前三个点入栈
+        for( i=3;i<=n;++i )
+        {
+            while( cross(a[i],s[top],s[top-1])>=0 ) top--; // 若对于点i,s[top]若非左转则弹出
+            top++;    s[top]=a[i];    // 再将点i入栈
+        }
+    }
+    return    0;
+}
+
+//--------------------------------------字符串的距离-------------------------------------------
+// 对字符串每个字符DP处理。
+// a[i,j]表示：取第一个字符串的第i个字符，取第一个字符串的第j个字符
+// DP方程：a[i,j]:=min{a[i-1,j-1]+abs(ord(s1[j])-ord(s2[j])),a[i,j-1]+k,a[i-1,j]+k}
+while( scanf("%s",s1)!=EOF )
+{
+    scanf("%s",s2);        scanf("%d",&k);
+    len1=strlen(s1);    len2=strlen(s2);
+    for( i=0;i<=len1;++i )    a[i][0]=k*i;
+    for( j=0;j<=len2;++j )    a[0][j]=k*j;
+    for( i=1;i<=len1;++i )                // i:s1[]  j:s2[]
+        for( j=1;j<=len2;++j )
+            a[i][j]=min(a[i-1][j-1]+abs(int(s1[i-1]-s2[j-1])),a[i-1][j]+k,a[i][j-1]+k);        
+    printf("%d\n",a[len1][len2]);
+}
+
+//--------------------------------------二分最大匹配问题-------------------------------------------
+// 第一行 2个正整数N, M (0 <= N, M <= 100)。 N为蛋糕个数，M为减肥剂的个数。 
+// 接下来每行两个数字 Pi, Pj 表示编号为Pj的减肥剂可以完全涂抹编号为Pi的蛋糕 0 0 时结束。 
+bool    a[101][101],vy[101];    // 用来判是否用过
+int        my[101];                // 用来给被匹配数编号
+bool    aug( int x )
+{
+    int    i;
+
+    for( i=1;i<=m;++i )        // m为减肥剂的个数 (即用于匹配的数)
+    {
+      if( a[x][i] && !vy[i] )
+      {
+        vy[i]=true;
+        if( my[i]==0 || aug(my[i]) )
+        {
+          my[i]=x; return true;
+        }
+      }
+    }
+    return false;
+}
+
+int
+main()
+{
+    int        i,j;
+    int        cnt;
+
+    while( scanf("%d %d",&n,&m)!=EOF )
+    {
+        memset(a,0,sizeof(a));
+        for(;;) { scanf("%d %d",&i,&j); if(!i)break; a[i][j]=true; }
+        memset(my,0,sizeof(my));
+        cnt = 0;
+        for( i=1;i<=n;++i )            // n为蛋糕总数 (即被匹配的数)
+        {
+            memset(vy,0,sizeof(vy));
+            if( aug(i) ) cnt++;        // 最后cnt表示最多的匹配数
+        }
+    }
+    return    0;
+}
+
+//--------------------------------------求最长不降子序-------------------------------------------
+// 求最长不降子序的 O(nlogn) 算法
+// a[]是求解对象； b[]是辅助数组。
+// 先求一串元素在另一串中的位置 如：
+// 10
+// 8 6 5 7 10 3 2 9 4 1 
+// 3 6 9 2 7 1 8 5 10 4 
+// 则A在B中的位置是 7 2 8 5 9 1 4 3 10 6   对此数列求最长升序 就OK了
+
+void    LIS()
+{
+    ans=0;
+    for( i=1;i<=n;++i )
+    {
+        j=1;    k=ans;
+        while (j<=k)                    // j:起点  k:终点
+        {
+            m=(j+k)/2;
+            if( b[m]<a[i] )    j=m+1;
+                    else    k=m-1;
+        }
+        if( j>ans ) ans=ans+1;
+        b[j]=a[i];
+    }
+    printf("%d\n",ans);
+}
+
+// 你打算从N(1 <= N <= 600)首歌中精选一些歌曲，发行M(1 <= M <= 600)张CD。
+// 每一张CD最多可以容纳T(1 <= T <= 10000)分钟的音乐，一首歌不能分装在两张CD中。 
+// 歌曲必须按照创作的时间顺序在CD盘上出现。 · 选中的歌曲数目尽可能地多。
+// g[i][j].a:表示现在考虑到第i首歌，已经录入了j首歌，已使用了a张盘
+// g[i][j].a:表示现在考虑到第i首歌，已经录入了j首歌，已使用了第a张盘已用了b分钟
+    n = k;
+    for( i=1;i<=n;++i )                    // i表示现在考虑到前i首歌 (阶段)
+        for( j=1;j<=i;++j )                // j表示前i首歌里想要灌入j首歌 (状态)
+        {                                
+            // g[i][j]=min( g[i-1][j] , g[i-1][j-1]+len[i] );
+            //  分别表示: (未录入第i首歌,已录入第i首歌);
+            if( g[i-1][j-1].b+len[i]>t )    
+            {    
+                res.a=g[i-1][j-1].a+1;    
+                res.b=len[i];    
+            }
+            else                            
+            {
+                res.a=g[i-1][j-1].a;
+                res.b=g[i-1][j-1].b+len[i];
+            }
+            if( i-1>=j )    g[i][j]=min(g[i-1][j],res);
+                    else    g[i][j]=res;
+        }
+
+// dijkstra 算法
+
+void dijkstra( int v0,int n ) {
+    int pre[205];
+    int i,u;
+    memset(mark,0,sizeof(mark));
+    for( i=1;i<=n;++i ) {
+        d[i]=a[v0][i];
+        if( d[i] ) pre[i]=v0; else pre[i]=0;
+    }
+    mark[v0]=true;
+    for( ;; ) { 
+        min=MAX; u=0;
+        for( i=1;i<=n;++i )
+            if( !mark[i] && d[i]<min ) {
+                u=i; min=d[i];
+            }
+        if( u==n ) break;
+        if( u ) {
+            mark[u]=true;
+            for( i=1;i<=n;++i )
+                if( !mark[i] && a[u][i]+d[u]<d[i] ) {
+                    d[i]=a[u][i]+d[u];
+                    pre[i]=u;
+                }
+        }
+        if( u==0 ) break;
+    }
+}
+
+// 长度记录在a[i][j]中，表示点i到点j的距离。
+dijkstra(1,r);
+ans=(int)d[r];
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//  字符串hash
+int hash(char *key)
+{
+    unsigned int h = 0;
+    while (*key)
+    {
+        h = (h << 4) + *key++;
+        unsigned int g = h & 0xf0000000L;
+        if (g) h ^= g >> 24;
+        h &= ~g;
+    }
+    return h %971437;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//////    gcd and extend_gcd
+int gcd(int a, int b)
+{
+    int z;
+    while ((a % b) > 0) {
+        z = a;
+        a = b;
+        b = z % b;
+    }
+    return b;
+}
+
+int extended_gcd(int a,int b,int &x,int &y)
+{
+    int k;
+    if (b==0)
+    {
+        k=a;
+        x=1; 
+        y=0;        
+    }    else
+    {
+        k=extended_gcd(b,a%b,x,y);
+        int t;
+        t=x;
+        x=y;
+        y=t-(a/b)*y;
+    }
+    return k;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/////////// //  并查集
+int find( int x ) {
+    int t,p;
+    p=x;
+    while( p!=root[p] ) { p=root[p]; }
+    while( x!=root[x] ) { t=root[x]; root[x]=p; x=t; }
+    return p;
+}
+//合并操作
+  p1 = find(x);
+  p2 = find(y);
+  p1 = root[p2];
+  
+////////////////////////////////////////////////////////////////////////////////
+//////    trie 图
+#include <stdio.h>
+#include <string.h>
+const int MAXN = 1010;
+const int MAXL = 21;
+const int root = 0;
+struct Trie {
+    int next[26];
+    int pre;
+    int count;
+    char ch;
+} trie[MAXN*MAXL];
+
+int opt[MAXN];
+int ntr, nopt;
+char s[MAXL];
+void Insert(char s[])
+{
+    int len, now, i;
+    len = strlen(s);
+    now = root;
+    for (i = 0; i < len; i++){
+        if (trie[now].next[s[i]-'a'] == 0){
+            trie[now].next[s[i]-'a'] = ++ntr;
+            trie[ntr].pre = now;
+            trie[ntr].ch = s[i];
+        }
+        now = trie[now].next[s[i]-'a'];
+        trie[now].count++;
+    }
+    opt[++nopt] = now;
+}
+int nlen;
+void prt(int k, int len)
+{
+    if (k == 0)
+    {
+        nlen = len;
+        return ;
+    }
+    prt(trie[k].pre, len+1);
+    s[nlen-len-1] = trie[k].ch;
+    return ;
+}
+int main()
+{
+    int i;
+    nopt = 0;
+    ntr = 0;
+    freopen("2001.txt", "r", stdin);
+    memset(trie, 0, sizeof(trie));
+    while (scanf("%s", s) == 1)
+        Insert(s);
+    for (i = 1; i <= nopt; i++)
+    {
+        int tmp = opt[i];
+        nlen = 0;
+        prt(tmp, nlen);
+        s[nlen] = 0;
+        printf("%s ", s);
+        while (trie[trie[tmp].pre].count == 1 && trie[tmp].pre != 0)
+            tmp = trie[tmp].pre;
+        nlen = 0;
+        prt(tmp, nlen);
+        s[nlen] = 0;
+        printf("%s\n", s);
+    }
+    return 0;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//////    二次剩余    
+问题：
+  判断 x^2 = a (mod m) 是否有解.
+#include "stdio.h"
+#include "string.h"
+#include "limits.h"
+#include "math.h"
+
+const int sign[2] = {1, -1};
+
+int prime[5000];
+int tot;
+
+
+int exist(int n, int p, int cho)
+{ int i;
+    if (n <= 1)
+        return 1;
+    if (n == 2)
+        if (p % 8 == 1 || p % 8 == 7)
+            return 1;
+        else
+            return -1;
+    if (cho == 0)
+    {
+        if (n > p)
+            return exist(n % p, p, 1);
+        else
+            return exist(p % n, n, 1) * sign[(((p - 1) / 2) % 2) * (((n - 1) / 2) % 2)];
+    }
+    for (i = cho; i <= tot; i ++)
+        if (prime[i] * prime[i] > n)
+            break;
+        else
+            if (n % prime[i] == 0)
+            {
+                return exist(prime[i], p, 0) * exist(n / prime[i], p, i);
+            }
+    return exist(n, p, 0);
+}
+
+void prepare(int tag)
+{ int i = 2, j;
+  int used[50000];
+    memset(used, 0, sizeof(used));
+    do
+    {
+        prime[++tot] = i;
+        for (j = 1; j <= tag / i; j ++)
+            used[i * j] = 1;
+        while (i <= tag && used[i]) i ++;
+    }
+    while (i <= tag);
+}
+
+int main()
+{ int n, p;
+
+//    freopen("in.txt", "r", stdin);
+
+    prepare(int(sqrt(INT_MAX)));
+
+    scanf("%d%d", &n, &p);
+    while (n && p)
+    {
+        if (exist(n % p, p, 1) == 1)
+            printf("Yes\n");
+        else
+            printf("No\n");
+        scanf("%d%d", &n, &p);
+    }
+    return 0;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//  线段树
+struct Tree
+{
+    int a, b, left, right, cover;
+} tr[3000];
+void Make_tree(int a, int b)
+{
+    tot ++;
+    int now = tot;
+    tr[now].a = a;
+    tr[now].b = b;
+    tr[now].cover = 0;
+    if (a + 1 < b)
+    {
+        tr[now].left = tot + 1;
+        Make_tree(a, (a + b) / 2);
+        tr[now].right = tot + 1;
+        Make_tree((a + b) / 2, b);
+    }
+}
+int Insert(int a, int b, int num)
+{
+    if (tr[num].cover == 2)
+        return 0;
+    if (a <= tr[num].a && b >= tr[num].b && tr[num].cover == 0)
+    {
+        tr[num].cover = 2;
+        return tr[num].b - tr[num].a;
+    }
+    tr[num].cover = 1;
+    int res = 0;
+    if (a < (tr[num].a + tr[num].b) / 2)
+        res += Insert(a, b, tr[num].left);
+    if (b > (tr[num].a + tr[num].b) / 2)
+        res += Insert(a, b, tr[num].right);
+    if (tr[tr[num].left].cover == 2 && tr[tr[num].right].cover == 2)
+        tr[num].cover = 2;
+    return res;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//  线段树
+//zju 2573
+
+#include <stdio.h>
+#include <string.h>
+#define MAXN 50
+class Matrix{
+public:
+    int value[MAXN][MAXN], n, m;
+    Matrix(void);
+    Matrix(int a);
+    Matrix(int a, int b);
+    void operator = (Matrix a);
+    Matrix operator * (Matrix  a);
+    void operator *= (Matrix a);
+    Matrix operator ^ (int exp);
+    void operator ^= (int exp);
+    void print(void);
+};
+Matrix::Matrix(void){
+    n = m = 0;
+}
+Matrix::Matrix(int a, int b){
+    n = a;
+    m = b;
+}
+Matrix::Matrix(int a){
+    int i;
+    n = m = a;
+    memset(value, 0, sizeof(value));
+    for (i = 0; i < n; i++)
+        value[i][i] = 1;
+}
+void Matrix::operator = (Matrix a){
+    int i, j;
+    for (i = 0; i < a.n; i++)
+        for (j = 0; j < a.m; j++)
+            value[i][j] = a.value[i][j];
+    n = a.n;
+    m = a.m;
+    return ;
+}
+Matrix Matrix::operator * (Matrix a){
+    if (m != a.n){
+        Matrix c;
+        return c;
+    }
+    int i, j, k;
+    Matrix c(a.n, a.n);
+    for (i = 0; i < n; i++)
+        for (j = 0; j < a.m; j++){
+            c.value[i][j] = 0;
+            for (k = 0; k < n; k++)
+                c.value[i][j] ^= value[i][k] & a.value[k][j];
+        }
+    return c;
+}
+Matrix Matrix::operator ^ (int exp){
+    Matrix now(n);
+    Matrix base = (*this);
+    while (exp){
+        if (exp & 1)
+            now *= base;
+        base *= base;
+        exp >>= 1;
+    }
+    return now;
+}
+void Matrix::operator ^= (int exp){
+    (*this) = (*this) ^ exp;
+}
+void Matrix::operator *= (Matrix a){
+    (*this) = (*this) * a;
+}
+void Matrix::print(void){
+    int i, j;
+    for (i = 0; i < n; i++){
+        for (j = 0; j < m; j++)
+            printf("%d ", value[i][j]);
+        printf("\n");
+    }
+}
+int main(){
+    int n, m, i, j, k, exp;
+    Matrix matrix[2], res[3];
+    int per[3];
+    char status[10];
+    while (scanf("%d %d %d %d", &n, &m, &per[0], &per[1]) == 4){
+        matrix[0].n = matrix[0].m = n;
+        matrix[1].n = matrix[1].m = n;
+        for (i = 0; i < 2; i++){
+            for (j = 0; j < n; j++)
+                for (k = 0; k < n; k++)
+                    scanf("%d", &matrix[i].value[j][k]);
+            res[i] = matrix[i] ^ per[i];
+//            res[i].print();
+        }
+        res[2] = res[1] * res[0];
+        per[2] = per[0] + per[1];
+        exp = m / per[2];
+        res[2] ^= exp;
+        if (m % per[2] > per[0])
+            res[2] = (matrix[1] ^ (m % per[2] - per[0])) * res[0] * res[2];
+        else res[2] = (matrix[0] ^ (m % per[2])) * res[2];
+        Matrix now(n, 1);
+        for (i = 0; i < n; i++){
+            scanf("%s", status);
+            if (strcmp(status, "dead") == 0){
+                now.value[i][0] = 0;
+            } else now.value[i][0] = 1;
+        }
+        now = res[2] * now;
+        for (i = 0; i < n - 1; i++)
+            if (now.value[i][0])
+                printf("alive ");
+            else printf("dead ");
+        if (now.value[n-1][0])
+            printf("alive\n");
+        else printf("dead\n");
+    }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//  Miller-Rabin
+
+#include "stdio.h"
+#include "stdlib.h"
+#include "time.h"
+
+const int s = 1988;
+
+
+int exp(int a, int p, int n)
+{ int ans = 1;
+    while (p)
+    {
+        if (p % 2) ans = (ans * a) % n;
+        a = (a * a) % n;
+        p /= 2;
+    }
+    return ans;
+}
+
+int Miller_Rabin(int n)
+{ int i, a;
+    for (i = 0; i < s; i ++)
+    {
+        a = rand() % (n - 2) + 2;
+        if (exp(a, n - 1, n) != 1) return 0;
+    }
+    return 1;
+}
+
+int main()
+{ int n;
+
+//    freopen("in.txt", "r", stdin);
+    
+    srand( (unsigned)time( NULL ) );
+
+    scanf("%d", &n);
+    while (n)
+    {
+        if (Miller_Rabin(n))
+            printf("%d is prime number.\n", n);
+        else
+            printf("%d isnt prime number.\n", n);
+        scanf("%d", &n);
+    }
+    return 0;
+}
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//  高斯消元
+问题：
+  求解 n个方程n个未知数 ( 即 Sigma Ai,j * Xj = Si , 1 <= i, j <= n )
+
+
+#include "stdio.h"
+#include "math.h"
+
+const double zero = 1e-8;
+
+double mat[100][101];
+int infinity[100];
+
+int main()
+{ int n, i, j, k;
+
+//    freopen("in.txt", "r", stdin);
+
+    scanf("%d", &n);
+    for (i = 0; i < n; i ++)
+        for (j = 0; j <= n; j ++)
+            scanf("%lf", &mat[i][j]);
+
+    for (i = 0; i < n; i ++)
+    {
+        for (j = i; j < n; j ++)
+            if (mat[j][i] > zero) break;
+        if (j >= n) continue;
+        for (k = 0; k <= n; k ++)
+        {
+            double tmp = mat[i][k];
+            mat[i][k] = mat[j][k];
+            mat[j][k] = tmp;
+        }
+        for (j = 0; j < n; j ++)
+            if (i != j)
+                for (k = n; k >= i; k --)
+                    mat[j][k] -= mat[j][i] / mat[i][i] * mat[i][k];
+    }
+
+    for (i = n - 1; i >= 0; i --)
+    {
+        if (fabs(mat[i][i]) <= zero)
+            if (fabs(mat[i][n]) > zero)
+            {
+                printf("no solution\n");
+                return 0;
+            }
+            else infinity[i] = 1;
+        for (j = i + 1; j < n; j ++)
+            if (infinity[j] && fabs(mat[i][j]) > zero)
+            {
+                infinity[i] = 1;
+                break;
+            }
+        if (fabs(mat[i][i]) > zero) mat[i][n] /= mat[i][i];
+    }
+
+    for (i = 0; i < n; i ++)
+        if (infinity[i])
+            printf("X%d = infinity\n", i + 1);
+        else
+            printf("X%d = %.3lf\n", i + 1, mat[i][n]);
+    return 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//  三角形外心
+#include <stdio.h>
+#include <math.h>
+#define pi acos(-1)
+struct Point
+{
+    double x, y;
+};
+double th, r;
+Point Circumcenter(Point p1, Point p2, Point p3)
+{
+    double a, b, c, d, e, f;
+    Point p;
+    a = p1.x - p2.x;
+    b = p1.y - p2.y;
+    c = (p1.x * p1.x - p2.x * p2.x + p1.y * p1.y - p2.y * p2.y) / 2;
+    d = p1.x - p3.x;
+    e = p1.y - p3.y;
+    f = (p1.x * p1.x - p3.x * p3.x + p1.y * p1.y - p3.y * p3.y) / 2;
+    p.y = (c * d - f * a) / (d * b - a * e);
+    p.x = (c * e - b * f) / (e * a - b * d);
+    r = sqrt((p.x - p1.x) * (p.x - p1.x) + (p.y - p1.y) * (p.y - p1.y));
+    th = asin((p1.y - p.y) / r);
+    if (p1.x < p.x) th += pi;
+    return p;
+}
+int main()
+{
+    Point p1, p2, p3, p;
+    double x0, y0;
+    double minx, miny, maxx, maxy;
+    int i, n, k;
+    k = 0;
+    while (scanf("%d", &n) == 1)
+    {
+        if (n == 0) break;
+        scanf("%lf %lf %lf %lf %lf %lf", &p1.x, &p1.y, &p2.x, &p2.y, &p3.x, &p3.y);
+        p = Circumcenter(p1, p2, p3);
+        minx = miny = 1e40;
+        maxx = maxy = -1e40;
+        for (i = 1; i <= n; i++)
+        {
+            x0 = p.x + cos(th + i * (2 * pi) / n) * r;
+            y0 = p.y + sin(th + i * (2 * pi) / n) * r;
+            if (x0 < minx)
+                minx = x0;
+            if (x0 > maxx)
+                maxx = x0;
+            if (y0 < miny)
+                miny = y0;
+            if (y0 > maxy)
+                maxy = y0;
+        }
+        printf("Polygon %d: %.3lf\n", ++k, (maxy - miny) * (maxx - minx));
+    }
+    return 0;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//  LCA_jarjan
+//toj1068
+
+#include <cstdio>
+#include <vector>
+#define MAXN 30000
+using namespace std;
+
+vector<int> next[MAXN], que[MAXN];
+int res;
+int p[MAXN], rank[MAXN], c[MAXN], h[MAXN], anc[MAXN], used[MAXN];
+
+void Make_Set(int x){
+    p[x] = x;
+    rank[x] = 0;
+}
+
+int Find_Set(int x){
+    if (x != p[x])
+        p[x] = Find_Set(p[x]);
+    return p[x];
+}
+
+void Link(int x, int y){
+    if (rank[x] > rank[y])
+        p[y] = x;
+    else
+    {
+        p[x] = y;
+        if (rank[x] == rank[y])
+            rank[y]++;
+    }
+}
+
+void Union(int x, int y){
+    Link(Find_Set(x), Find_Set(y));
+}
+
+void Lca(int u, int level){
+    vector<int>::iterator iter;
+    Make_Set(u);
+    anc[u] = u;
+    h[u] = level;
+    used[u] = 1;
+
+    for (iter = next[u].begin(); iter != next[u].end(); iter++){
+        int v = *iter;
+        if (used[v] == 1) continue;
+        Lca(v, level + 1);
+        Union(u, v);
+        anc[Find_Set(u)] = u;
+    }
+    c[u] = 1;
+    for (iter = que[u].begin(); iter != que[u].end(); iter++)
+        if (c[*iter] == 1)
+            res += h[*iter] + h[u] - 2 * h[anc[Find_Set(*iter)]];
+}
+int main(){
+    int n, m, i, x, y, pre;
+    while (scanf("%d", &n) == 1){
+        
+        for (i = 0; i < n; i++){
+            next[i].clear();
+            que[i].clear();
+        }
+        memset(c, 0, sizeof(c));
+        memset(p, 0, sizeof(p));
+        memset(used, 0, sizeof(used));
+        memset(rank, 0, sizeof(rank));
+        res = 0;
+
+        for (i = 1; i < n; i++){
+            scanf("%d %d", &x, &y);
+            next[x - 1].push_back(y - 1);
+            next[y - 1].push_back(x - 1);
+        }
+        scanf("%d", &m);
+        pre = MAXN + 1;
+        for (i = 0; i < m; i++){
+            scanf("%d", &x);
+            if (pre < MAXN + 1){
+                que[pre-1].push_back(x-1);
+                que[x-1].push_back(pre-1);
+            }
+            pre = x;
+        }
+        Lca(0, 0);
+        printf("%d\n", res);
+    }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+//  面积树
+#include <stdio.h>
+struct Area_tree
+{
+    int x1, y1, x2, y2;
+    int left_top, left_bottom, right_top, right_bottom;
+    int cover;
+};
+struct Rec
+{
+    int x1, y1, x2, y2;
+};
+Rec rec[6000];
+char sign[6000][2];
+Area_tree Atree[1400000];
+int tot;
+void Make_Atree(int x1, int y1, int x2, int y2)
+{
+    tot++;
+    int now = tot;
+//    if (now > 500000) while (1);
+    Atree[now].x1 = x1;
+    Atree[now].y1 = y1;
+    Atree[now].x2 = x2;
+    Atree[now].y2 = y2;
+    Atree[now].cover = 0;
+    if (x1 + 1 < x2)
+    {
+        if (y1 + 1 < y2)
+        {
+            Atree[now].left_bottom = tot + 1;
+            Make_Atree(x1, y1, (x1 + x2) / 2, (y1 + y2) / 2);
+            Atree[now].left_top = tot + 1;
+            Make_Atree(x1, (y1 + y2) / 2, (x1 + x2) / 2, y2);
+            Atree[now].right_bottom = tot + 1;
+            Make_Atree((x1 + x2) / 2, y1, x2, (y1 + y2) / 2);
+            Atree[now].right_top = tot + 1;
+            Make_Atree((x1 + x2) / 2, (y1 + y2) / 2, x2, y2);
+        }
+        else
+        {
+            Atree[now].left_top = tot + 1;
+            Make_Atree(x1, y1, (x1 + x2) / 2, y2);
+            Atree[now].right_top = tot + 1;
+            Make_Atree((x1 + x2) / 2, y1, x2, y2);            
+        }
+    }
+    else
+    {
+        if (y1 + 1 < y2)
+        {
+            Atree[now].right_top = tot + 1;
+            Make_Atree(x1, (y1 + y2) / 2, x2, y2);
+            Atree[now].right_bottom = tot + 1;
+            Make_Atree(x1, y1, x2, (y1 + y2) / 2);
+        }
+    }
+}
+int Insert(int x1, int y1, int x2, int y2, int num)
+{
+    if (Atree[num].cover == 2)
+        return 0;
+    if (x1 <= Atree[num].x1 && x2 >= Atree[num].x2 && y1 <= Atree[num].y1 && y2 >= Atree[num].y2 && Atree[num].cover == 0)
+    {
+        Atree[num].cover = 2;
+        return (Atree[num].y2 - Atree[num].y1) * (Atree[num].x2 - Atree[num].x1);
+    }
+    int res = 0;
+    Atree[num].cover = 1;
+    if (x1 < (Atree[num].x1 + Atree[num].x2) / 2)
+    {
+        if (y1 < (Atree[num].y1 + Atree[num].y2) / 2)
+            res += Insert(x1, y1, x2, y2, Atree[num].left_bottom);
+        if (y2 > (Atree[num].y1 + Atree[num].y2) / 2)
+            res += Insert(x1, y1, x2, y2, Atree[num].left_top);
+    }
+    if (x2 > (Atree[num].x1 + Atree[num].x2) / 2)
+    {
+        if (y1 < (Atree[num].y1 + Atree[num].y2) / 2)
+            res += Insert(x1, y1, x2, y2, Atree[num].right_bottom);
+        if (y2 > (Atree[num].y1 + Atree[num].y2) / 2)
+            res += Insert(x1, y1, x2, y2, Atree[num].right_top);
+    }
+    if (Atree[Atree[num].left_top].cover == 2 && Atree[Atree[num].left_bottom].cover == 2 && Atree[Atree[num].right_top].cover == 2 && Atree[Atree[num].right_bottom].cover == 2)
+        Atree[num].cover = 2;
+    return res;
+}
+int main()
+{
+    int n, m, i, ans, tmp;
+    scanf("%d %d", &n, &m);
+    for (i = 1; i <= m; i++)
+    {
+        scanf("%d %d %d %d %s", &rec[i].x1, &rec[i].y1, &rec[i].x2, &rec[i].y2, sign[i]);
+        if (rec[i].x1 > rec[i].x2)
+        {
+            tmp = rec[i].x1;
+            rec[i].x1 = rec[i].x2;
+            rec[i].x2 = tmp;
+        }
+        if (rec[i].y1 > rec[i].y2)
+        {
+            tmp = rec[i].y1;
+            rec[i].y1 = rec[i].y2;
+            rec[i].y2 = tmp;
+        }
+        rec[i].x1--;
+        rec[i].y1--;
+    }
+    tot = 0;
+    Make_Atree(0, 0, n, n);
+    ans = 0;
+    for (i = m; i >= 1; i--)
+    {
+        if (sign[i][0] == 'b')
+            ans += Insert(rec[i].x1, rec[i].y1, rec[i].x2, rec[i].y2, 1);
+        else Insert(rec[i].x1, rec[i].y1, rec[i].x2, rec[i].y2, 1);
+    }
+    printf("%d\n", n * n - ans);
+    return 0;
+}
