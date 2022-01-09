@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <queue>
 #include <string>
+#include <sstream>
 using namespace std;
 typedef struct {
     int state;
@@ -51,7 +52,9 @@ int main()
                 if (i != cur_room && (room_state & (1 << i)) && a[cur_room][i] && check[room_state * 10 + i] == 0)
                 {
                     Step y;
-                    string s = "Move to room " + to_string(i + 1) + ".";
+                    stringstream ss;
+                    ss << i+1;
+                    string s = "Move to room " + ss.str() + ".";
                     y.step = cur.step;
                     y.step.push_back(s);
                     y.state = room_state * 10 + i;
@@ -66,7 +69,9 @@ int main()
                     if (check[new_state] == 0)
                     {
                         Step y;
-                        string s = "Switch off light in room " + to_string(sw[cur_room][i] + 1) + ".";
+                        stringstream ss;
+                        ss << sw[cur_room][i] + 1;
+                        string s = "Switch off light in room " + ss.str() + ".";
                         y.step = cur.step;
                         y.step.push_back(s);
                         y.state = new_state;
@@ -82,7 +87,9 @@ int main()
                     if (check[new_state] == 0)
                     {
                         Step y;
-                        string s = "Switch on light in room " + to_string(sw[cur_room][i] + 1) + ".";
+                        stringstream ss;
+                        ss << sw[cur_room][i] + 1;
+                        string s = "Switch on light in room " + ss.str() + ".";
                         y.step = cur.step;
                         y.step.push_back(s);
                         y.state = new_state;

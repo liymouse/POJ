@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <math.h>
-using namespace std;
 #define PI (3.14159265358979)
 
 int main()
@@ -68,8 +67,8 @@ int main()
                         break;
                     }
                 }
-                double aL = sqrt(ax*ax + ay*ay);
-                double dL = sqrt(dx*dx + dy*dy);
+                double aL = sqrt((double)ax*ax + ay*ay);
+                double dL = sqrt((double)dx*dx + dy*dy);
                 double dian = dx * ax + dy * ay;
                 double angle = acos(dian / (dL * aL));
                 res += angle * r;

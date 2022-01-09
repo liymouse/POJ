@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
 int memo[1 << 18] = { 0 };
@@ -50,39 +51,20 @@ int find(int s, int get)
     }
     else
     {
-        int ns = s;
-        int have = 1;
-        while (have)
-        {
-            have = 0;
-            //get all trangles 1st
-            for (int i = 0; i < 9; i++)
+        for (int i = 0; i < 18; i++)
+            if ((s & (1 << i)) == 0)
             {
-                int k = tra[i] - (ns & tra[i]);
-                if (k != 0 && (k&(k - 1)) == 0) //add 1 can get a trangle
-                {
-                    ns |= k;
-                    have = 1;
-                    break;
-                }
+                int ns = s | (1 << i);
+                int cur = 0;
+                for (int i = 0; i < 9; i++)
+                    if ((ns & tra[i]) == tra[i]) cur++;
+                int t;
+                if (get == cur) //change player
+                    t = 9 - get - find(ns, get);
+                else
+                    t = cur - get + find(ns, cur);
+                if (t > res) res = t;
             }
-        }
-        if (ns == (1 << 18) - 1) { res = 9 - get; }
-        else
-        {
-            int cur = 0;
-            for (int i = 0; i < 9; i++)
-                if ((ns & tra[i]) == tra[i]) cur++;
-
-            int minv = 100;
-            for (int i = 0; i < 18; i++)
-                if ((ns & (1 << i)) == 0)
-                {
-                    int k = find(ns | (1 << i), cur);
-                    if (k < minv) minv = k;
-                }
-            res = 9 - get - minv;
-        }
     }
     memo[s] = res;
     return res;
@@ -109,7 +91,7 @@ int main()
         }
         int cur = num[0] + num[1];
         num[p] += find(s, cur);
-        num[1-p] = 9 - num[p];
+        num[1 - p] = 9 - num[p];
 
         printf("Game %d: %c wins.\n", ca, (num[0] > num[1]) ? 'A' : 'B');
     }

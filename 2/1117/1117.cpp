@@ -29,13 +29,19 @@ int main()
     //k-1 digit
     int x = n / p10[k - 1];
     int y = n % p10[k - 1];
+    int x10 = n / p10[k - 2];
+    int y10 = n % p10[k - 2];
     if (y % 2 == 0)
     {
         res.push_back(make_pair(x*p10[k - 1] + y / 2, y / 2));
     }
-    if (x > 1 && y % 2 == 0)
+    if (x > 1 && (p10[k-1]+y) % 2 == 0)
     {
         res.push_back(make_pair((x - 1)*p10[k - 1] + (p10[k - 1] + y) / 2, (p10[k - 1] + y) / 2));
+    }
+    if (x10 == 10 && (p10[k-2]+y10) % 2 == 0)
+    {
+        res.push_back(make_pair(9 * p10[k - 2] + (p10[k - 2] + y10) / 2, (p10[k - 2] + y10) / 2));
     }
     for (int i = 1; i < k-1; i++)
     {
@@ -61,7 +67,13 @@ int main()
         }
     }
     sort(res.begin(), res.end(), cmp);
+    int cnt = 0;
+
     for (int i = 0; i < res.size(); i++)
+        if (i == 0 || (i > 0 && !(res[i].first == res[i - 1].first && res[i].second == res[i - 1].second))) cnt++;
+    printf("%d\n", cnt);
+    for (int i = 0; i < res.size(); i++)
+        if (i == 0 || (i>0 && !(res[i].first == res[i-1].first && res[i].second == res[i-1].second)))
     {
         int s = res[i].first;
         int t = 0;

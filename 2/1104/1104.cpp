@@ -1,11 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
 int a[102][101][101];
 int w, h;
-int p[4][2] = { {1, 0}, {-1, 0}, {0, -1}, {0, 1} };
+int p[5][2] = { {1, 0}, {-1, 0}, {0, -1}, {0, 1}, {0, 0} };
 void check(int st, int et, int inc)
 {
-    for (int t = st; t != et; t += inc)
+    for (int t = st; t != et + inc; t += inc)
     {
         for (int y = 1; y <= h; y ++)
             for (int x = 1; x <= w; x++)
@@ -13,7 +14,7 @@ void check(int st, int et, int inc)
                 if (a[t][y][x] == 0)
                 {
                     int ok = 0;
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < 5; i++)
                     {
                         int xx = x + p[i][0];
                         int yy = y + p[i][1];

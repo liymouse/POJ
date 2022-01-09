@@ -35,10 +35,10 @@ int main()
             int b = p[j].y - p[i].y;
             if (p[i].x - a < 1 || p[i].y - b < 1 || p[i].y - b > c)
             {
-                int st = 0;
+                int st = 100000;
                 if (a > 0) st = (r - p[i].x) / a + 1;
-                if (b > 0 && (c - p[i].y) / b + 1 > st) st = (c - p[i].y) / b + 1;
-                else if (b < 0 && (p[i].y - 1) / b + 1 > st) st = (p[i].y - 1) / b + 1;
+                if (b > 0 && (c - p[i].y) / b + 1 < st) st = (c - p[i].y) / b + 1;
+                else if (b < 0 && (p[i].y - 1) / (-b) + 1 < st) st = (p[i].y - 1) / (-b) + 1;
                 if (st <= res) continue;
                 int x = p[j].x + a;
                 int y = p[j].y + b;
