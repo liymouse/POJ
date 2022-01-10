@@ -1,10 +1,17 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-int linecross(double x1, double y1, double x2, double y2,
-    double x3, double y3, double x4, double y4)
+int linecross(int x1, int y1, int x2, int y2,
+    int x3, int y3, int x4, int y4)
 {
-    if (((x3 - x2) * (y1 - y2) - (y3 - y2) * (x1 - x2)) * ((x4 - x2)*(y1 - y2) - (y4 - y2)*(x1 - x2)) <= 0 &&
+    //same line but not cross
+    if (((x3 - x2) * (y1 - y2) - (y3 - y2) * (x1 - x2)) * ((x4 - x2)*(y1 - y2) - (y4 - y2)*(x1 - x2)) == 0 &&
+        ((x1 - x3) * (y4 - y3) - (y1 - y3) * (x4 - x3)) * ((x2 - x3)*(y4 - y3) - (y2 - y3)*(x4 - x3)) == 0)
+    {
+        if ((x3 - x1)*(x4 - x1) + (y3 - y1)*(y4 - y1) > 0 && (x3 - x2)*(x4 - x2) + (y3 - x2)*(y4 - y2) > 0) return 0;
+        return 1;
+    }
+    else if (((x3 - x2) * (y1 - y2) - (y3 - y2) * (x1 - x2)) * ((x4 - x2)*(y1 - y2) - (y4 - y2)*(x1 - x2)) <= 0 &&
         ((x1 - x3) * (y4 - y3) - (y1 - y3) * (x4 - x3)) * ((x2 - x3)*(y4 - y3) - (y2 - y3)*(x4 - x3)) <= 0)
         return 1;
     return 0;

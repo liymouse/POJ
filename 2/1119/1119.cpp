@@ -20,20 +20,25 @@ int main()
         string a = "";
         int L = strlen(s);
         for (int i = 0; i < L; i++)
+        {
             if ('A' <= s[i] && s[i] <= 'Z') a += s[i] - 'A' + 'a';
             else if (('a' <= s[i] && s[i] <= 'z') || ('0' <= s[i] && s[i] <= '9')) a += s[i];
-        int k = -1;
-        for (int i = 0; i < search.size(); i++)
-            if (search[i].key == a) {
-                k = i;
-                search[i].num++; break;
-            }
-        if (k == -1)
+        }
+        if (a != "")
         {
-            Elm x;
-            x.key = a;
-            x.num = 1;
-            search.push_back(x);
+            int k = -1;
+            for (int i = 0; i < search.size(); i++)
+                if (search[i].key == a) {
+                    k = i;
+                    search[i].num++; break;
+                }
+            if (k == -1)
+            {
+                Elm x;
+                x.key = a;
+                x.num = 1;
+                search.push_back(x);
+            }
         }
     }
     int finish = 0;

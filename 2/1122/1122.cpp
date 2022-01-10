@@ -15,18 +15,19 @@ int main()
     int a[30][30];
     int n;
     scanf("%d", &n);
+    for (int i = 1; i <= n; i++) dist[i] = 1 << 30;
     for (int i = 1; i <= n; i++)
         for (int j = 1; j <= n; j++)
             scanf("%d", &a[j][i]);
     int s;
     scanf("%d", &s);
     int mark[30] = { 0 }, path[30] = { 0 };
-    mark[s] = 1; path[s] = 0;
     for (int i = 1; i <= n; i++)
     {
         dist[i] = a[s][i];
-        if (dist[i] > 0) path[i] = s;
+        if (dist[i] >= 0) path[i] = s;
     }
+    mark[s] = 1; path[s] = 0;
     for (int i = 1; i <= n; i++)
     {
         int minv = 1<<30;
