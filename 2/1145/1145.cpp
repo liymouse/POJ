@@ -30,6 +30,7 @@ void maketree(int cur, int a, int b)
     tree[cur] = 0;
     int f = 1;
     if (str[a] == '-') { f = -1; a++; }
+    else if (str[a] == '+') { f = 1; a++; }
     while ('0' <= str[a] && str[a] <= '9') {
         tree[cur] = tree[cur] * 10 + str[a] - '0'; a++;
     }
