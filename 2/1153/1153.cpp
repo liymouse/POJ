@@ -6,64 +6,64 @@ typedef long long lld;
 #define P 10000000
 
 int a[100000];
-int num[100000] = { 0 };
 
 int main()
 {
+    //freopen("safe.ina", "r", stdin);
+    //freopen("output.txt", "w", stdout);
     int n;
     scanf("%d", &n);
     for (int i = 0; i < n; i++) scanf("%d", &a[i]);
     sort(a, a + n);
-    int k = 1;
-    num[0] = 1;
-    for (int i = 1; i < n; i ++)
-        if (a[i] == a[i - 1])
-        {
-            num[k - 1] ++;
-        }
-        else
-        {
-            if (k != i) a[k] = a[i];
-            num[k] = 1;
-            k++;
-        }
-    int N = k;
+
     int maxv = -1;
-    k = -1;
-    for (int i = 0; i < N; i++)
+    int k = -1;
+    for (int i = 0; i < n; i++)
     {
-        int diff = (i == 0) ? a[i] + P - a[N - 1] : a[i] - a[i - 1];
+        int diff = (i == 0) ? a[i] + P - a[n - 1] : a[i] - a[i - 1];
         if (diff > maxv) { maxv = diff; k = i; }
     }
-    int sum = num[k];
-    int mid = k;
-    while (sum < n/2)
-    {
-        mid = (mid + 1) % N;
-        sum += num[mid];
-    }
-    sum = 0;
     lld res = 0;
-    int i = k;
-    while (i != mid)
+    if (maxv >= P / 2)
     {
-        sum += num[i];
-        int j = (i + 1) % N;
-        lld diff = a[j] - a[i];
-        if (diff < 0) diff += P;
-        res += (lld)sum * diff;
-        i = (i + 1) % N;
+        int mid = (k + n / 2) % n;
+        for (int i = 0; i < n; i++) res += min(abs(a[i] - a[mid]), P - abs(a[i] - a[mid]));
     }
-    i = (k - 1 + N) % N;
-    sum = 0;
-    while (i != mid)
+    else
     {
-        sum += num[i];
-        int j = (i - 1 + N) % N;
-        lld diff = a[i] - a[j];
-        if (diff < 0) diff += P;
-        res += (lld)sum * diff;
-        i = (i - 1 + N) % N;
+        int mid = 0;
+        for (int i = 0; i < n; i++) res += min(abs(a[i] - a[mid]), P - abs(a[i] - a[mid]));
+        int t0 = (mid + 1) % n;
+        while (t0 != mid)
+        {
+            int dist = t0 > mid ? a[t0] - a[mid] : P - a[mid] + a[t0];
+            if (dist >= P / 2) break;
+            t0 = (t0 + 1) % n;
+        }
+        int cur = 0;
+        lld sum = res;
+        //printf("%d %lld\n", cur, res);
+        while (cur < n)
+        {
+            int nxt = cur + 1;
+            while (nxt < n && a[nxt] == a[cur]) nxt++;
+            if (nxt >= n) break;
+            int t1 = t0;
+            while (t1 != nxt)
+            {
+                int cur_dist = t1 > cur ? P - a[t1] + a[cur] : a[cur] - a[t1];
+                int dist = t1 > nxt ? a[t1] - a[nxt] : P - a[nxt] + a[t1];
+                if (dist >= P / 2) break;
+                sum = sum - cur_dist + dist;
+                t1 = (t1 + 1) % n;
+            }
+            lld L = a[nxt] - a[cur];
+            sum += L * ((nxt + n - t1) % n);
+            sum -= L * ((t0 + n - nxt) % n);
+            if (sum < res) res = sum;
+            cur = nxt; t0 = t1;
+            //printf("%d %lld\n", cur, sum);
+        }
     }
     printf("%lld\n", res);
     return 0;
