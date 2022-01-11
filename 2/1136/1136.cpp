@@ -2,6 +2,10 @@
 #include <math.h>
 #define PI (3.14159265358979)
 
+double len(double x, double y)
+{
+    return sqrt(x*x + y*y);
+}
 int main()
 {
     int n;
@@ -15,13 +19,14 @@ int main()
         for (int i = 0; i < n; i++) scanf("%d %d", &px[i], &py[i]);
         int curx = 0, cury = 0;
         double dx = -1, dy = 0;
-        while (1)
+        while (r > 0)
         {
             double L = -1;
             double r2 = r * r;
+            double dL = len(dx, dy);
             int nxti = -1;
             for (int i = 0; i < n; i++)
-                if (px[i] != curx || py[i] != cury)
+                if (py[i] <= 0 && (px[i] != curx || py[i] != cury))
                 {
                     int a = px[i] - curx;
                     int b = py[i] - cury;
@@ -39,13 +44,14 @@ int main()
             {
                 if (r > -cury)
                 {
-                    double dL = sqrt(dx*dx + dy*dy);
-                    double angle = acos(dx / dL) + asin(-cury/r);
+                    double bx = sqrt(r2 - cury*cury);
+                    double by = -cury;
+                    double angle = acos((dx*bx + dy*by) / dL / r);
                     res += r * angle;
                     res *= 2;
                     break;
                 }
-                else
+                else //circle
                 {
                     res = 2 * PI * r;
                     break;
@@ -59,24 +65,24 @@ int main()
                 {
                     double bx = sqrt(r2 - cury*cury);
                     double by = -cury;
-                    if (bx * ay - ax * by >= 0)
+                    if (bx * ay - ax * by > 0 || (bx*ay-ax*by==0 && bx*ax+by*ay>0))
                     {
-                        double angle = acos(dx / r) + asin(-cury / r);
+                        double angle = acos((dx*bx + dy*by) / dL / r);
                         res += r * angle;
                         res *= 2;
                         break;
                     }
                 }
-                double aL = sqrt((double)ax*ax + ay*ay);
-                double dL = sqrt((double)dx*dx + dy*dy);
+                double aL = len(ax, ay);
                 double dian = dx * ax + dy * ay;
                 double angle = acos(dian / (dL * aL));
                 res += angle * r;
-                dx = px[nxti] - curx;
-                dy = py[nxti] - cury;
+                dx = ax;
+                dy = ay;
                 curx = px[nxti];
                 cury = py[nxti];
                 r -= aL;
+                if (r == 0) { res *= 2; break; }
             }
         }
         printf("Pendulum #%d\n", ca++);

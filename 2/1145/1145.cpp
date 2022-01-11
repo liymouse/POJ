@@ -1,40 +1,53 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
+typedef struct _Node Node;
+struct _Node
+{
+    int v;
+    Node *left, *right;
+    _Node()
+    {
+        left = right = 0;
+        v = 0;
+    }
+};
 
-int tree[10000];
-int have[10000];
 char str[10000];
 int k, L, getit;
 
-void dfs(int cur, int sum)
+void dfs(Node *cur, int sum)
 {
-    if (have[cur] == 0 || getit == 1) return;
-    sum += tree[cur];
-    if (have[cur * 2 + 1] == 0 && have[cur * 2 + 1] == 0)
-    {
-        if (sum == k) { getit = 1; return; }
-    }
-    if (have[cur * 2 + 1]) dfs(cur * 2 + 1, sum);
-    if (have[cur * 2 + 1]) dfs(cur * 2 + 2, sum);
+    if (cur == NULL || getit == 1) return;
+    sum += cur->v;
+    if (cur->left == NULL && cur->right == NULL && sum == k) { getit = 1; return; }
+    if (cur->left) dfs(cur->left, sum);
+    if (cur->right) dfs(cur->right, sum);
 
 }
-void maketree(int cur, int a, int b)
+void cleanTree(Node **cur)
+{
+    if ((*cur) == NULL) return;
+    if ((*cur)->left) cleanTree(&(*cur)->left);
+    if ((*cur)->right) cleanTree(&(*cur)->right);
+    delete *cur;
+}
+void maketree(Node **cur, int a, int b)
 {
     //skip ()
     a++; b--;
     //if empty tree return
     if (a > b) return;
+    *cur = new Node();
     //get root
-    have[cur] = 1;
-    tree[cur] = 0;
+    (*cur)->v = 0;
     int f = 1;
     if (str[a] == '-') { f = -1; a++; }
     else if (str[a] == '+') { f = 1; a++; }
     while ('0' <= str[a] && str[a] <= '9') {
-        tree[cur] = tree[cur] * 10 + str[a] - '0'; a++;
+        (*cur)->v = (*cur)->v * 10 + str[a] - '0'; a++;
     }
-    tree[cur] *= f;
+    (*cur)->v *= f;
     int c = a;
     int kuo = 0;
     while (c < b)
@@ -45,8 +58,8 @@ void maketree(int cur, int a, int b)
         }
         c++;
     }
-    maketree(cur * 2 + 1, a, c);
-    maketree(cur * 2 + 2, c + 1, b);
+    maketree(&(*cur)->left, a, c);
+    maketree(&(*cur)->right, c + 1, b);
 }
 
 int main()
@@ -57,8 +70,6 @@ int main()
         char s[1000];
         L = 0;
         int end = 0;
-        memset(have, 0, sizeof(have));
-        memset(tree, 0, sizeof(tree));
         while (scanf("%s", s) == 1)
         {
             int n = strlen(s);
@@ -72,10 +83,12 @@ int main()
                 }
             if (end) break;
         }
-        maketree(0, 0, L - 1);
+        Node *tree = NULL;
+        maketree(&tree, 0, L - 1);
         getit = 0;
-        dfs(0, 0);
+        dfs(tree, 0);
         if (getit) printf("yes\n"); else printf("no\n");
+        cleanTree(&tree);
     }
     return 0;
 }
