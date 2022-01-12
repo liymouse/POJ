@@ -165,12 +165,16 @@ void find()
                             res_num++;
                             if (i != j) //save trans
                             {
-                                res[res_num].a[0] = a[0][j];
-                                res[res_num].a[1] = combine(get(a0, 1), get(a1, 1), get(a2, 1), get(a3, 1), get(a4, 1));
-                                res[res_num].a[2] = combine(get(a0, 2), get(a1, 2), get(a2, 2), get(a3, 2), get(a4, 2));
-                                res[res_num].a[3] = combine(get(a0, 3), get(a1, 3), get(a2, 3), get(a3, 3), get(a4, 3));
-                                res[res_num].a[4] = combine(get(a0, 4), get(a1, 4), get(a2, 4), get(a3, 4), get(a4, 4));
-                                res_num++;
+                                int dig = combine(get(a0, 4), get(a1, 3), get(a2, 2), get(a3, 1), get(a4, 0));
+                                if (p[dig] == 0)
+                                {
+                                    res[res_num].a[0] = a[0][j];
+                                    res[res_num].a[1] = combine(get(a0, 1), get(a1, 1), get(a2, 1), get(a3, 1), get(a4, 1));
+                                    res[res_num].a[2] = combine(get(a0, 2), get(a1, 2), get(a2, 2), get(a3, 2), get(a4, 2));
+                                    res[res_num].a[3] = combine(get(a0, 3), get(a1, 3), get(a2, 3), get(a3, 3), get(a4, 3));
+                                    res[res_num].a[4] = combine(get(a0, 4), get(a1, 4), get(a2, 4), get(a3, 4), get(a4, 4));
+                                    res_num++;
+                                }
                             }
                         }
                     }
@@ -186,10 +190,13 @@ int main()
         for (int k = i + i; k < N; k += i) p[k] = 1;
     }
     int sum, first;
+#if 1
     scanf("%d %d", &sum, &first);
-    //freopen("output.txt", "w", stdout);
-    //for (sum = 5; sum <= 45; sum++)
-    //for (first = 1; first <= 9; first++)
+#else
+    freopen("output.txt", "w", stdout);
+    for (sum = 5; sum <= 45; sum++)
+    for (first = 1; first <= 9; first++)
+#endif
     {
         res_num = 0;
         for (int k = 1; k < 10; k++)

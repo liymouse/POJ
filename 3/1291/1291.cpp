@@ -13,7 +13,7 @@ int cmp(Elm &x, Elm &y)
 {
     return x.num > y.num;
 }
-int f[1001];
+int f[2001];
 
 int getF(int x)
 {
@@ -28,61 +28,50 @@ int main()
     while (scanf("%d", &n) == 1)
     {
         if (n == 0) break;
-        for (int i = 1; i <= n; i++) f[i] = i;
+        //1~n = true  n+1~n+n = false
+        for (int i = 1; i <= 2*n; i++) f[i] = i;
         int bad = 0;
-        int id[1001], judge[1001];
-        int check[1001];
         for (int i = 1; i <= n; i++)
         {
             char s1[20], s2[20], s3[20];
             int x;
             scanf("%s %d %s %s", s1, &x, s2, s3);
-            id[i] = x; judge[i] = (s3[0] == 't');
-            if (s3[0] == 'f' && x == i) bad = 1;
-            else if (s3[0] == 't')
+            if (s3[0] == 't')
             {
-                int a = getF(i);
-                int b = getF(x);
-                f[a] = b;
-                check[i] = 1;
+                //i,x must both true or both false
+                if (getF(i) == getF(x + n) || getF(i + n) == getF(x)) bad = 1;
+                else
+                {
+                    f[getF(i)] = getF(x);
+                    f[getF(i + n)] = getF(x + n);
+                }
             }
-            else check[i] = -1;
+            else
+            {
+                //i,x must in different union
+                if (getF(i) == getF(x) || getF(i + n) == getF(x + n)) bad = 1;
+                else
+                {
+                    f[getF(i)] = getF(x + n);
+                    f[getF(i + n)] = getF(x);
+                }
+            }
         }
         if (bad) printf("Inconsistent\n");
         else
         {
-            Elm a[1001];
+            char checked[2001] = { 0 };
+            int num[2001] = { 0 };
+            int res = 0;
+            for (int i = 1; i <= n; i ++) num[getF(i)] ++;
             for (int i = 1; i <= n; i++)
             {
-                a[i].id = i; a[i].num = 0;
+                //if sentense i has been checked
+                if (checked[getF(i)] || checked[getF(i + n)]) continue;
+                res += max(num[getF(i)], num[getF(i + n)]);
+                checked[getF(i)] = checked[getF(i + n)] = 1;
             }
-            for (int i = 1; i <= n; i ++) a[getF(i)].num ++;
-            sort(a+1, a + n+1, cmp);
-            int res = 0;
-            int k = 1;
-            while (k <= n)
-            {
-                if (a[k].num == 0) break;
-                if (judge[a[k].id]) res += a[k].num;
-                else
-                {
-                    if (check[id[a[k].id]] == 1) //a[k].id must be false
-                    {
-                        if (check[a[k].id] == 1) { bad = 1; break; }
-                        check[a[k].id] = 0;
-                    }
-                    else
-                    {
-                        if (check[a[k].id] == 0) { bad = 1; break; }
-                        check[a[k].id] = 1;
-                        check[id[a[k].id]] = 0;
-                        res += a[k].num;
-                    }
-                }
-                k++;
-            }
-            if (bad) printf("Inconsistent\n");
-            printf("%d\n", res > n - res ? res : n - res);
+            printf("%d\n", res);
         }
     }
     return 0;

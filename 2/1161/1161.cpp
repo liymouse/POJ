@@ -35,7 +35,7 @@ int main()
             {
                 a[i][bian[t][pre]] = a[bian[t][pre]][i] = 1;
             }
-            if (has[t]) a[i][has[t]] = a[has[t]][i] = 0;
+            if (has[t]) a[has[t]][i] = 0;
             pre = t;
         }
         if (bian[t0][pre] == 0)
@@ -46,7 +46,8 @@ int main()
         {
             a[i][bian[t0][pre]] = a[bian[t0][pre]][i] = 1;
         }
-        if (has[t0]) a[i][has[t0]] = a[has[t0]][i] = 0;
+        if (has[t0]) a[has[t0]][i] = 0;
+        a[i][i] = 0;
     }
     for (int k = 1; k <= m+L; k ++)
         for (int i = 1; i <= m+L; i ++)
@@ -62,7 +63,7 @@ int main()
     {
         int sum = 0;
         for (int j = m + 1; j <= m + L; j++)
-            sum += a[i][j];
+            sum += a[j][i];
         if (res == -1 || sum < res) res = sum;
     }
     printf("%d\n", res);
