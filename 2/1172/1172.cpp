@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
 
@@ -10,7 +11,7 @@ void dfs(int x)
 {
     v[x] = 1;
     for (int i = 0; i < n; i ++)
-        if (a[x][i] >= 0 && v[i] == 0)
+        if (a[x][i] && v[i] == 0)
         {
             dfs(i);
         }
@@ -19,7 +20,7 @@ void dfs2(int x)
 {
     v[x] = 2;
     for (int i = 0; i < n; i ++)
-        if (a[x][i] >= 0 && v[i] != 2)
+        if (a[x][i] && v[i] != 2)
         {
             if (v[i] == 1) {
                 split = 0; return;
@@ -29,10 +30,9 @@ void dfs2(int x)
 }
 int main()
 {
-    int full_map[55][55];
+    int full_map[55][55] = { 0 };
     n = 0;
     int x;
-    memset(full_map, 0xff, sizeof(full_map));
     while (scanf("%d", &x) == 1)
     {
         if (x == -1) break;
@@ -45,19 +45,22 @@ int main()
     {
         memcpy(a, full_map, sizeof(full_map));
         for (int j = 0; j < n; j++)
-            a[i][j] = a[j][i] = -1;
+            a[i][j] = a[j][i] = 0;
         memset(v, 0, sizeof(v));
         dfs(0);
         if (v[n - 1] == 0) res[i] = 1;
 
         split = 0;
-        memcpy(a, full_map, sizeof(full_map));
         for (int j = 0; j < n; j++)
-            if (j != i && v[j] == 0)
+            if (full_map[i][j] && v[j] != 2)
             {
-                split = 1;
-                dfs2(j);
-                if (split == 0) break;
+                if (v[j] == 1) { split = 0; break; }
+                else
+                {
+                    split = 1;
+                    dfs2(j);
+                    if (split == 0) break;
+                }
             }
         if (split) res[i] = 2;
     }
