@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <queue>
 using namespace std;
@@ -7,50 +8,45 @@ typedef struct _Node {
     int s, t;
     struct _Node *next;
 }Node;
-typedef struct _Schedual {
+typedef struct {
     int ts, tL;
     int type; //0 = malloc, 1 = free
     int ms, mL;
-    struct _Schedual *next;
+    int id;
 }Schedual;
-
-void addSchedual(Schedual *sche, Schedual *a)
+Schedual sche[12000];
+int scheN, global_id;
+int cmp(int x, int y)
 {
-    Schedual *p = sche;
-    while (p != NULL)
+    if (sche[x].ts == sche[y].ts)
     {
-        if (a->type == 1 && p->ts < a->ts && (p->next == NULL || p->next->ts >= a->ts))
-        {
-            Schedual *q = (Schedual *)malloc(sizeof(Schedual));
-            *q = *a;
-            q->next = p->next;
-            p->next = q;
-            break;
-        }
-        else if (a->type == 0 && p->ts <= a->ts && (p->next == NULL || p->next->ts > a->ts))
-        {
-            Schedual *q = (Schedual *)malloc(sizeof(Schedual));
-            *q = *a;
-            q->next = p->next;
-            p->next = q;
-            break;
-        }
-        p = p->next;
+        if (sche[x].type == 0 && sche[y].type == 0) return sche[x].id < sche[y].id;
+        return sche[x].type > sche[y].type;
+    }
+    return sche[x].ts < sche[y].ts;
+}
+void heapPop()
+{
+    sche[0] = sche[scheN - 1];
+    scheN--;
+    int k = 0;
+    while (k * 2 + 1 < scheN)
+    {
+        int j = k * 2 + 1;
+        if (j + 1 < scheN && cmp(j + 1, j)) j++;
+        if (cmp(k, j)) break;
+        Schedual tmp = sche[k]; sche[k] = sche[j]; sche[j] = tmp;
+        k = j;
     }
 }
-void removeSchedual(Schedual *sche, Schedual *a)
+void heapShiftUp(int x)
 {
-    Schedual *p = sche;
-    while (p != NULL)
+    while (x > 0 && cmp(x, (x - 1) / 2))
     {
-        if (p->next == a)
-        {
-            p->next = a->next;
-            break;
-        }
-        p = p->next;
+        Schedual tmp;
+        tmp = sche[x]; sche[x] = sche[(x - 1) / 2]; sche[(x - 1) / 2] = tmp;
+        x = (x - 1) / 2;
     }
-    free(a);
 }
 int canAdd(Node *mem, Schedual *a)
 {
@@ -62,7 +58,7 @@ int canAdd(Node *mem, Schedual *a)
     }
     return 0;
 }
-void addMem(Node *mem, Schedual *sche, Schedual *a)
+void addMem(Node *mem, Schedual *a)
 {
     Node *q = mem->next;
     while (q != NULL)
@@ -81,11 +77,12 @@ void addMem(Node *mem, Schedual *sche, Schedual *a)
                 q->t = q->s + a->mL - 1;
                 q->use = 1;
             }
-            Schedual sche_f;
-            sche_f.type = 1;
-            sche_f.ms = q->s;
-            sche_f.ts = a->ts + a->tL;
-            addSchedual(sche, &sche_f);
+            sche[scheN].type = 1;
+            sche[scheN].ms = q->s;
+            sche[scheN].ts = a->ts + a->tL;
+            sche[scheN].id = global_id ++;
+            scheN++;
+            heapShiftUp(scheN - 1);
             break;
         }
         q = q->next;
@@ -144,40 +141,44 @@ int main()
     mem.next->use = 0;
     mem.next->next = NULL;
     int t, m, p;
-    Schedual sche;
-    sche.ts = -1;
-    sche.next = NULL;
     int resNum = 0;
     int maxTime = 0;
+    scheN = 0;
+    global_id = 0;
     while (scanf("%d %d %d", &t, &m, &p) == 3)
     {
         if (t == 0 && m == 0 && p == 0) break;
-        Schedual a;
-        a.ts = t;
-        a.tL = p;
-        a.ms = -1;
-        a.mL = m;
-        a.type = 0;
-        a.next = NULL;
-        addSchedual(&sche, &a);
+        sche[scheN].id = global_id++;
+        sche[scheN].ts = t;
+        sche[scheN].tL = p;
+        sche[scheN].ms = -1;
+        sche[scheN].mL = m;
+        sche[scheN].type = 0;
+        scheN++;
     }
     queue<Schedual> qu;
-    while (sche.next != NULL)
+    int last_del = 0;
+    int last_time = 0;
+    while (scheN > 0 || !qu.empty())
     {
-        Schedual *e = sche.next;
-        int curT = e->ts;
-        if (e->type == 1)
+        if (scheN > 0 && sche[0].type == 1 && 
+            (last_del == 0 || (last_del == 1 && sche[0].ts == last_time)))
         {
-            freeMem(&mem, e);
-            if (!(e->next != NULL && e->ts == e->next->ts && e->next->type == 1))
+            freeMem(&mem, &sche[0]);
+            last_del = 1;
+            last_time = sche[0].ts;
+        }
+        else
+        {
+            if (last_del)
             {
                 while (!qu.empty())
                 {
                     Schedual a = qu.front();
                     if (canAdd(&mem, &a))
                     {
-                        a.ts = curT;
-                        addMem(&mem, &sche, &a);
+                        a.ts = last_time;
+                        addMem(&mem, &a);
                         qu.pop();
                     }
                     else
@@ -186,20 +187,25 @@ int main()
                     }
                 }
             }
-        }
-        else if (e->type == 0)
-        {
-            if (canAdd(&mem, e)) {
-                addMem(&mem, &sche, e);
+            if (sche[0].type == 0)
+            {
+                last_del = 0;
+                if (canAdd(&mem, &sche[0])) addMem(&mem, &sche[0]);
+                else
+                {
+                    qu.push(sche[0]);
+                    resNum++;
+                }
             }
             else
             {
-                qu.push(*e);
-                resNum++;
+                freeMem(&mem, &sche[0]);
+                last_del = 1;
+                last_time = sche[0].ts;
             }
         }
-        if (e->ts > maxTime) maxTime = e->ts;
-        removeSchedual(&sche, e);
+        if (sche[0].ts > maxTime) maxTime = sche[0].ts;
+        heapPop();
     }
     printf("%d\n%d\n", maxTime, resNum);
     {
