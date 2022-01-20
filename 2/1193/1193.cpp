@@ -99,21 +99,6 @@ void freeMem(Node *mem, Schedual *a)
         }
         p = p->next;
     }
-#if 0
-    p = mem->next;
-    Node *q = p->next;
-    while (p != NULL && q != NULL)
-    {
-        if (p->use == 0 && q->use == 0)
-        {
-            p->t = q->t;
-            p->next = q->next;
-            free(q);
-            q = p->next;
-        }
-        else { p = q; q = q->next; }
-    }
-#else
     Node *q = p->next;
     Node *r = q->next;
     if (r != NULL && r->use == 0)
@@ -128,7 +113,6 @@ void freeMem(Node *mem, Schedual *a)
         p->next = q->next;
         free(q);
     }
-#endif
 }
 int main()
 {
