@@ -1,13 +1,47 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <string.h>
 #include <queue>
 using namespace std;
 typedef struct {
     int x, y, t, predir;
-}Elm;
-
+}Node;
+Node heap[10005];
+int heapn;
 int p[4][2] = { {1, 0}, {0, 1}, {-1, 0}, {0, -1} };
 char a[105][105];
+
+void heapPop()
+{
+    heap[0] = heap[heapn - 1];
+    heapn--;
+    int k = 0;
+    while (k * 2 + 1 < heapn)
+    {
+        int j = k * 2 + 1;
+        if (j + 1 < heapn && heap[j + 1].t < heap[j].t) j++;
+        if (heap[k].t < heap[j].t) break;
+        Node tmp = heap[k]; heap[k] = heap[j]; heap[j] = tmp;
+        k = j;
+    }
+}
+void heapShiftUp(int x)
+{
+    while (x > 0 && heap[x].t < heap[(x - 1) / 2].t)
+    {
+        Node tmp = heap[x]; heap[x] = heap[(x - 1) / 2]; heap[(x - 1) / 2] = tmp;
+        x = (x - 1) / 2;
+    }
+}
+void addHeap(int x, int y, int t, int predir)
+{
+    heap[heapn].t = t;
+    heap[heapn].x = x;
+    heap[heapn].y = y;
+    heap[heapn].predir = predir;
+    heapShiftUp(heapn);
+    heapn++;
+}
 int getNext(int x, int y, int d, int curt)
 {
     if (a[x][y] == '+') return 1;
@@ -31,9 +65,9 @@ int getNext(int x, int y, int d, int curt)
     }
     curt %= n * change;
     int curnum = curt / change;
-    if (curnum == num) return 2;
-    else if (curnum < num) return num*change - curt + 2;
-    else return num*change - curt + n * change + 2;
+    if (curnum == num) return 1;
+    else if (curnum < num) return num*change - curt + 1;
+    else return num*change - curt + n * change + 1;
 }
 int main()
 {
@@ -53,25 +87,21 @@ int main()
                 if (a[i][j] == 'S') { sx = i; sy = j; }
                 else if (a[i][j] == 'D') { ex = i; ey = j; }
         }
-        queue<Elm> qu;
+        heapn = 0;
+        memset(heap, 0, sizeof(heap));
         for (int i = 0; i < 4; i++)
         {
             if ((i % 2 == 0 && a[sx + p[i][0]][sy + p[i][1]] == '|') ||
                 (i % 2 == 1 && a[sx + p[i][0]][sy + p[i][1]] == '-'))
             {
-                Elm x;
-                x.t = 1;
-                x.x = sx + p[i][0];
-                x.y = sy + p[i][1];
-                x.predir = i;
-                t[x.x][x.y] = 1;
-                qu.push(x);
+                addHeap(sx + p[i][0], sy + p[i][1], 1, i);
+                t[sx + p[i][0]][sy + p[i][1]] = 1;
             }
         }
-        while (!qu.empty())
+        while (heapn)
         {
-            Elm x = qu.front();
-            qu.pop();
+            Node x = heap[0];
+            heapPop();
             if (x.t > t[x.x][x.y]) continue;
             int xx = x.x + p[x.predir][0];
             int yy = x.y + p[x.predir][1];
@@ -79,23 +109,18 @@ int main()
             if (a[xx][yy] == '*' || a[xx][yy] == ' ' || a[xx][yy] == 'S') continue;
             if (x.predir % 2 == 0 && a[xx][yy] == '-') continue;
             if (x.predir % 2 == 1 && a[xx][yy] == '|') continue;
-            if (a[xx][yy] == 'D') { t[xx][yy] = x.t + 1; goto L_exit; }
+            if (a[xx][yy] == 'D') { t[xx][yy] = x.t; goto L_exit; }
             if ((a[xx][yy] == '-' || a[xx][yy] == '|'))
             {
                 if (t[xx][yy] == -1 || x.t + 1 < t[xx][yy])
                 {
-                    Elm y;
-                    y.predir = x.predir;
-                    y.x = xx;
-                    y.y = yy;
-                    y.t = x.t + 1;
+                    addHeap(xx, yy, x.t + 1, x.predir);
                     t[xx][yy] = x.t + 1;
-                    qu.push(y);
                 }
             }
             else
             {
-                int nextt = getNext(xx, yy, x.predir, x.t+1);
+                int nextt = getNext(xx, yy, x.predir, x.t);
                 for (int j = 0; j < 4; j++)
                     if (j != (x.predir + 2) % 4)
                     {
@@ -107,13 +132,8 @@ int main()
                         {
                             if (t[nx][ny] == -1 || x.t + nextt < t[nx][ny])
                             {
-                                Elm y;
-                                y.predir = j;
-                                y.x = nx;
-                                y.y = ny;
-                                y.t = x.t + nextt;
+                                addHeap(nx, ny, x.t + nextt, j);
                                 t[nx][ny] = x.t + nextt;
-                                qu.push(y);
                             }
                         }
                     }
