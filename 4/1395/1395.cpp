@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <vector>
 #include <algorithm>
 using namespace std;
 
@@ -13,7 +14,7 @@ int gcd(int x, int y)
     return x;
 }
 
-#define MAX 100000
+#define MAX 10000
 char f[MAX+1];
 
 int main()
@@ -24,11 +25,20 @@ int main()
     {
         int n;
         scanf("%d", &n);
-        int a[25];
-        for (int i = 0; i < n; i++) scanf("%d", &a[i]);
-        sort(a, a + n);
+        vector<int> a;
+        for (int i = 0; i < n; i++)
+        {
+            int x;
+            scanf("%d", &x);
+            a.push_back(x);
+        }
+        sort(a.begin(), a.end());
         for (int i = 1; i < n; i++) a[i] /= a[0];
         a[0] = 1;
+        for (int i = 1; i < n; i++)
+            for (int j = 1; j < i; j++)
+                if (a[i] % a[j] == 0) a.push_back(a[i] / a[j]);
+        n = a.size();
         memset(f, 0, sizeof(f));
         f[1] = 1;
         if (n > 1)
