@@ -13,6 +13,7 @@ typedef struct
 int f[601];
 int op[601];
 int dp[601][601];
+int tot[601];
 
 int getF(int x)
 {
@@ -20,17 +21,29 @@ int getF(int x)
     f[x] = getF(f[x]);
     return f[x];
 }
+int merge(int x, int y)
+{
+    x = getF(x);
+    y = getF(y);
+    if (x == y || y == 0) return x;
+    if (x == 0) return y;
+    f[x] = y;
+    tot[y] += tot[x];
+    return y;
+}
 int main()
 {
-    freopen("g1.txt", "r", stdin);
-    freopen("output1.txt", "w", stdout);
+    //freopen("g1.txt", "r", stdin);
+    //freopen("output1.txt", "w", stdout);
     int m, p1, p2;
     while (scanf("%d %d %d", &m, &p1, &p2) == 3)
     {
         if (m == 0 && p1 == 0 && p2 == 0) break;
         int n = p1 + p2;
         memset(op, 0, sizeof(op));
-        for (int i = 1; i <= n; i++) f[i] = i;
+        for (int i = 1; i <= n; i++) {
+            f[i] = i; tot[i] = 1;
+        }
         for (int i = 0; i < m; i++)
         {
             int x, y;
@@ -39,51 +52,35 @@ int main()
             x = getF(x); y = getF(y);
             if (s[0] == 'y')
             {
-                f[x] = y;
-                int opx = getF(op[x]), opy = getF(op[y]);
-                if (opx > 0 && opy > 0) f[opx] = opy;
-                else f[opx] = max(opx, opy);
-                op[y] = f[opx];
-                op[f[opx]] = y;
+                int yes = merge(x, y);
+                int no = merge(op[x], op[y]);
+                op[yes] = no;
+                op[no] = yes;
             }
             else
             {
                 op[x] = getF(op[x]);
                 op[y] = getF(op[y]);
-                if (op[x] > 0) f[op[x]] = y;
-                op[x] = y;
-                if (op[y] > 0) f[op[y]] = x;
-                op[y] = x;
+                if (op[x] == 0) op[x] = y;
+                if (op[y] == 0) op[y] = x;
+                int xx = merge(x, op[y]);
+                int yy = merge(op[x], y);
+                op[xx] = yy;
+                op[yy] = xx;
             }
         }
         vector<Elm> a;
         int check[601] = { 0 };
-        while (1)
-        {
-            int x = -1;
-            for (int i = 1; i <= n; i++)
-                if (check[i] == 0)
-                {
-                    x = getF(i); break;
-                }
-            if (x == -1) break;
-            int y = getF(op[x]);
-            Elm t;
-            t.id[0] = x; t.id[1] = y;
-            t.num[0] = t.num[1] = 0;
-            for (int i = 1; i <= n; i ++)
-                if (getF(i) == x)
-                {
-                    check[i] = 1;
-                    t.num[0] ++;
-                }
-                else if (getF(i) == y)
-                {
-                    check[i] = 1;
-                    t.num[1] ++;
-                }
-            a.push_back(t);
-        }
+        for (int i = 1; i <= n; i ++)
+            if (check[getF(i)] == 0)
+            {
+                Elm t;
+                int x = getF(i);
+                check[x] = check[op[x]] = 1;
+                t.id[0] = x; t.id[1] = op[x];
+                t.num[0] = tot[x]; t.num[1] = tot[op[x]];
+                a.push_back(t);
+            }
         memset(dp, 0, sizeof(dp));
         dp[0][0] = 1;
         for (int i = 0; i < a.size(); i++)
