@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <vector>
 #include <string>
@@ -157,7 +158,7 @@ void active(Agent a[] , int i)
 		has = -1;
 		int wait = 5;
 		for (int j = i+1; j < 26; j ++)
-			if (a[j].state == WAIT_ELEVATOR && a[j].currentfloor == a[i].currentfloor)
+			if (a[j].state == WAITING_ELEVATOR && a[j].currentfloor == a[i].currentfloor)
 			{
 				a[j].waiting_time += (a[i].starttime+wait) - a[j].starttime;
 				a[j].starttime = a[i].starttime + wait;
